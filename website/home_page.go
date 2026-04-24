@@ -87,6 +87,8 @@ func generateHomepageLinks() template.HTML {
 			),
 		)
 
+		snippetsIncluded := 0
+
 		for _, e := range snippets {
 			if !e.IsDir() {
 				continue
@@ -107,6 +109,7 @@ func generateHomepageLinks() template.HTML {
 
 			categoryIncluded := slices.Contains(snippetData.Tags, category.Id)
 			if categoryIncluded {
+				snippetsIncluded += 1
 				categoryDiv.Children = append(categoryDiv.Children,
 					elem.A(
 						attrs.Props{
@@ -122,7 +125,9 @@ func generateHomepageLinks() template.HTML {
 			}
 		}
 
-		content.Children = append(content.Children, categoryDiv)
+		if snippetsIncluded > 0 {
+			content.Children = append(content.Children, categoryDiv)
+		}
 	}
 
 	return template.HTML(content.Render())
