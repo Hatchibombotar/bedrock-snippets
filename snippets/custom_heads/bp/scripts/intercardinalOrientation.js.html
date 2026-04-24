@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/bedrock-snippets/favicon.png">
+    <title>Bedrock Snippets: Custom Heads</title>
+    <link href="/bedrock-snippets/main.css" rel="stylesheet">
+    <script>var ROOT_DIRECTORY = "/bedrock-snippets"</script>
+</head>
+
+<body class="dark:bg-neutral-900 dark:text-white dark:fill-white flex flex-col h-[100dvh]">
+    <script src="/bedrock-snippets/js/theme.js"></script>
+    <div class="bg-neutral-100 dark:bg-neutral-800 p-2 border-b border-neutral-300 dark:border-neutral-600 flex gap-2 items-center">
+        <a href="/bedrock-snippets" class="flex flex-row items-center gap-1">
+            <img class="h-8 w-8" src="/bedrock-snippets/favicon.png" alt="">
+            <h1 class="text-lg font-semibold">Bedrock Snippets</h1>
+        </a>
+        <div class="ml-auto mr-2">
+            <div class="bg-neutral-200 dark:bg-neutral-900 flex items-center justify-center gap-2 py-1.5 px-2 rounded focus-within:outline-2">
+                <img id="theme-selector-icon" class="dark:invert h-4 w-4" src="/bedrock-snippets/OcSun2.svg" alt="">
+                <select class="dark:bg-neutral-900 cursor-pointer" id="theme-selector" title="Theme Selector">
+                    <option value="auto">
+                        System
+                    </option>
+                    <option value="light">
+                        Light
+                    </option>
+                    <option value="dark">
+                        Dark
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    
+<div class="flex flex-col overflow-auto flex-grow">
+
+    <div class="p-2 pb-0 flex justify-between items-center">
+        <div>
+            <h1>Custom Heads</h1>
+            <a href="https://github.com/bedrock-oss/bedrock-examples/tree/main/resources/custom_heads" class="text-neutral-700 dark:text-neutral-400 text-sm hover:underline">View Source</a>
+        </div>
+        <button id="sidebar-toggle" type="button" title="Toggle Sidebar" class="h-8 w-8 bg-neutral-200 dark:bg-neutral-800 rounded flex items-center justify-center cursor-pointer">
+            <img id="sidebar-toggle-icon" class="h-4 w-4 dark:invert" src="/bedrock-snippets/OcSidebarcollapse2.svg" alt="">
+        </button>
+    </div>
+    <div class="flex flex-row p-2 flex-grow overflow-auto ">
+        <div
+        id="main-content"
+        class="w-full overflow-hidden relative bg-neutral-100 rounded-l dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600">
+            <div class="absolute pl-2 pt-1 flex flex-row w-full bg-neutral-100 dark:bg-neutral-800 rounded-l">
+                <p class="whitespace-nowrap overflow-hidden overflow-ellipsis">custom_heads &gt; bp &gt; scripts &gt; intercardinalOrientation.js</p>
+                
+                <div class="mr-3 ml-auto flex flex-row gap-2 items-center">
+                    <button type="button" id="copy-content" title="Copy Content" class="cursor-pointer">
+                        <img class="h-4 w-4 dark:invert" src="/bedrock-snippets/OcCopy2.svg" alt="">
+                    </button>
+                    
+                </div>
+                
+            </div>
+            <div
+                class="h-full overflow-y-auto overflow-x-auto grow min-h-64 p-2 pt-8 w-full">
+                
+                <div data-content-text="import { system } from &#39;@minecraft/server&#39;;
+
+/** @param {number} yRotation */
+function getIntercardinalDirection(yRotation) {
+    // Converts the Y rotation into a positive angle below 360
+    yRotation %= 360;
+    if (yRotation &lt; 0)
+        yRotation += 360;
+    // Returns the Y rotation as an intercardinal direction below 16
+    return Math.round(yRotation / 22.5) % 16;
+}
+// Make sure you change &#34;wiki&#34; to your own namespace!
+const stateName = &#34;wiki:intercardinal_direction&#34;;
+const componentName = &#34;wiki:intercardinal_orientation&#34;;
+/** @type {import(&#34;@minecraft/server&#34;).BlockCustomComponent} */
+const BlockIntercardinalOrientationComponent = {
+    beforeOnPlayerPlace(event, { params }) {
+        const { player } = event;
+        if (!player)
+            return;
+        // Get the &#34;y_rotation_offset&#34; value defined in the block JSON (default to 0) and add it to the player&#39;s Y rotation
+        const yRotationOffset = params.y_rotation_offset ?? 0;
+        const yRotation = player.getRotation().y + yRotationOffset;
+        // Get the intercardinal direction value (0-15) from the player&#39;s Y rotation
+        const direction = getIntercardinalDirection(yRotation);
+        // Update the block permutation being placed
+        event.permutationToPlace = event.permutationToPlace.withState(stateName, direction);
+    },
+};
+// Register the custom component with the name &#34;wiki:intercardinal_orientation&#34;.
+system.beforeEvents.startup.subscribe(({ blockComponentRegistry }) =&gt; {
+    blockComponentRegistry.registerCustomComponent(componentName, BlockIntercardinalOrientationComponent);
+});
+" data-content-type="text" id="snippet-content"><pre class="chroma-chroma"><code><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kr">import</span> <span class="chroma-p">{</span> <span class="chroma-nx">system</span> <span class="chroma-p">}</span> <span class="chroma-kr">from</span> <span class="chroma-s1">&#39;@minecraft/server&#39;</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm">/** @param {number} yRotation */</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kd">function</span> <span class="chroma-nx">getIntercardinalDirection</span><span class="chroma-p">(</span><span class="chroma-nx">yRotation</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-c1">// Converts the Y rotation into a positive angle below 360
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>    <span class="chroma-nx">yRotation</span> <span class="chroma-o">%=</span> <span class="chroma-mi">360</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">yRotation</span> <span class="chroma-o">&lt;</span> <span class="chroma-mi">0</span><span class="chroma-p">)</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-nx">yRotation</span> <span class="chroma-o">+=</span> <span class="chroma-mi">360</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-c1">// Returns the Y rotation as an intercardinal direction below 16
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>    <span class="chroma-k">return</span> <span class="chroma-nb">Math</span><span class="chroma-p">.</span><span class="chroma-nx">round</span><span class="chroma-p">(</span><span class="chroma-nx">yRotation</span> <span class="chroma-o">/</span> <span class="chroma-mf">22.5</span><span class="chroma-p">)</span> <span class="chroma-o">%</span> <span class="chroma-mi">16</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1">// Make sure you change &#34;wiki&#34; to your own namespace!
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span><span class="chroma-kr">const</span> <span class="chroma-nx">stateName</span> <span class="chroma-o">=</span> <span class="chroma-s2">&#34;wiki:intercardinal_direction&#34;</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kr">const</span> <span class="chroma-nx">componentName</span> <span class="chroma-o">=</span> <span class="chroma-s2">&#34;wiki:intercardinal_orientation&#34;</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm">/** @type {import(&#34;@minecraft/server&#34;).BlockCustomComponent} */</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kr">const</span> <span class="chroma-nx">BlockIntercardinalOrientationComponent</span> <span class="chroma-o">=</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-nx">beforeOnPlayerPlace</span><span class="chroma-p">(</span><span class="chroma-nx">event</span><span class="chroma-p">,</span> <span class="chroma-p">{</span> <span class="chroma-nx">params</span> <span class="chroma-p">}</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-p">{</span> <span class="chroma-nx">player</span> <span class="chroma-p">}</span> <span class="chroma-o">=</span> <span class="chroma-nx">event</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-o">!</span><span class="chroma-nx">player</span><span class="chroma-p">)</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-k">return</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Get the &#34;y_rotation_offset&#34; value defined in the block JSON (default to 0) and add it to the player&#39;s Y rotation
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-kr">const</span> <span class="chroma-nx">yRotationOffset</span> <span class="chroma-o">=</span> <span class="chroma-nx">params</span><span class="chroma-p">.</span><span class="chroma-nx">y_rotation_offset</span> <span class="chroma-o">?</span><span class="chroma-o">?</span> <span class="chroma-mi">0</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-nx">yRotation</span> <span class="chroma-o">=</span> <span class="chroma-nx">player</span><span class="chroma-p">.</span><span class="chroma-nx">getRotation</span><span class="chroma-p">(</span><span class="chroma-p">)</span><span class="chroma-p">.</span><span class="chroma-nx">y</span> <span class="chroma-o">+</span> <span class="chroma-nx">yRotationOffset</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Get the intercardinal direction value (0-15) from the player&#39;s Y rotation
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-kr">const</span> <span class="chroma-nx">direction</span> <span class="chroma-o">=</span> <span class="chroma-nx">getIntercardinalDirection</span><span class="chroma-p">(</span><span class="chroma-nx">yRotation</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Update the block permutation being placed
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-nx">event</span><span class="chroma-p">.</span><span class="chroma-nx">permutationToPlace</span> <span class="chroma-o">=</span> <span class="chroma-nx">event</span><span class="chroma-p">.</span><span class="chroma-nx">permutationToPlace</span><span class="chroma-p">.</span><span class="chroma-nx">withState</span><span class="chroma-p">(</span><span class="chroma-nx">stateName</span><span class="chroma-p">,</span> <span class="chroma-nx">direction</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-p">}</span><span class="chroma-p">,</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1">// Register the custom component with the name &#34;wiki:intercardinal_orientation&#34;.
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span><span class="chroma-nx">system</span><span class="chroma-p">.</span><span class="chroma-nx">beforeEvents</span><span class="chroma-p">.</span><span class="chroma-nx">startup</span><span class="chroma-p">.</span><span class="chroma-nx">subscribe</span><span class="chroma-p">(</span><span class="chroma-p">(</span><span class="chroma-p">{</span> <span class="chroma-nx">blockComponentRegistry</span> <span class="chroma-p">}</span><span class="chroma-p">)</span> <span class="chroma-o">=</span><span class="chroma-o">&gt;</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-nx">blockComponentRegistry</span><span class="chroma-p">.</span><span class="chroma-nx">registerCustomComponent</span><span class="chroma-p">(</span><span class="chroma-nx">componentName</span><span class="chroma-p">,</span> <span class="chroma-nx">BlockIntercardinalOrientationComponent</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span></code></pre></div>
+                
+            </div>
+        </div>
+
+        <div
+            id="sidebar"
+            class="w-64 bg-neutral-100 dark:bg-neutral-800 border-r border-t border-b border-neutral-300 dark:border-neutral-600 rounded-r flex flex-col text-sm">
+            <div class="border-b border-neutral-300 dark:border-neutral-600 flex flex-row w-full items-center">
+                <p class="px-1 my-1 mx-1 font-semibold">Custom Heads</p>
+                
+            </div>
+            <div class="flex flex-col overflow-y-auto overflow-x-hidden w-52">
+                <div class="flex flex-col" data-directory-content=""><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5" href="/bedrock-snippets/snippets/custom_heads/">readme</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="bp/" onclick="toggleDir('bp/')" style="padding-left: calc(var(--spacing) * 1);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">bp</a><div class="flex flex-col" data-directory-content="bp/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="bp/blocks/" onclick="toggleDir('bp/blocks/')" style="padding-left: calc(var(--spacing) * 3);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">blocks</a><div class="flex flex-col" data-directory-content="bp/blocks/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/bp/blocks/custom_head.json" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>custom_head.json</a></div><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/bp/contents.json" style="padding-left: calc(var(--spacing) * 3);"><div class="mr-2 inline"></div>contents.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="bp/items/" onclick="toggleDir('bp/items/')" style="padding-left: calc(var(--spacing) * 3);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">items</a><div class="flex flex-col" data-directory-content="bp/items/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/bp/items/custom_head.json" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>custom_head.json</a></div><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/bp/manifest.json" style="padding-left: calc(var(--spacing) * 3);"><div class="mr-2 inline"></div>manifest.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/bp/pack_icon.png" style="padding-left: calc(var(--spacing) * 3);"><div class="mr-2 inline"></div>pack_icon.png</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="bp/scripts/" onclick="toggleDir('bp/scripts/')" style="padding-left: calc(var(--spacing) * 3);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">scripts</a><div class="flex flex-col" data-directory-content="bp/scripts/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/bp/scripts/headDrops.js" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>headDrops.js</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/bp/scripts/index.js" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>index.js</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/bp/scripts/intercardinalOrientation.js" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>intercardinalOrientation.js</a></div></div><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="rp/" onclick="toggleDir('rp/')" style="padding-left: calc(var(--spacing) * 1);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">rp</a><div class="flex flex-col" data-directory-content="rp/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/blocks.json" style="padding-left: calc(var(--spacing) * 3);"><div class="mr-2 inline"></div>blocks.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/contents.json" style="padding-left: calc(var(--spacing) * 3);"><div class="mr-2 inline"></div>contents.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/manifest.json" style="padding-left: calc(var(--spacing) * 3);"><div class="mr-2 inline"></div>manifest.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="rp/models/" onclick="toggleDir('rp/models/')" style="padding-left: calc(var(--spacing) * 3);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">models</a><div class="flex flex-col" data-directory-content="rp/models/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="rp/models/blocks/" onclick="toggleDir('rp/models/blocks/')" style="padding-left: calc(var(--spacing) * 5);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">blocks</a><div class="flex flex-col" data-directory-content="rp/models/blocks/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/models/blocks/custom_head.geo.json" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head.geo.json</a></div></div><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/pack_icon.png" style="padding-left: calc(var(--spacing) * 3);"><div class="mr-2 inline"></div>pack_icon.png</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="rp/texts/" onclick="toggleDir('rp/texts/')" style="padding-left: calc(var(--spacing) * 3);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">texts</a><div class="flex flex-col" data-directory-content="rp/texts/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/texts/en_US.lang" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>en_US.lang</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/texts/languages.json" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>languages.json</a></div><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="rp/textures/" onclick="toggleDir('rp/textures/')" style="padding-left: calc(var(--spacing) * 3);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">textures</a><div class="flex flex-col" data-directory-content="rp/textures/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/terrain_texture.json" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>terrain_texture.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/textures_list.json" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>textures_list.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="rp/textures/wiki/" onclick="toggleDir('rp/textures/wiki/')" style="padding-left: calc(var(--spacing) * 5);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">wiki</a><div class="flex flex-col" data-directory-content="rp/textures/wiki/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_back.png" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_back.png</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_back.texture_set.json" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_back.texture_set.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_back_mers.tga" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_back_mers.tga</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_bottom.png" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_bottom.png</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_bottom.texture_set.json" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_bottom.texture_set.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_bottom_mers.tga" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_bottom_mers.tga</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_front.png" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_front.png</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_front.texture_set.json" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_front.texture_set.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_front_mers.tga" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_front_mers.tga</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_left.png" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_left.png</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_left.texture_set.json" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_left.texture_set.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_left_mers.tga" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_left_mers.tga</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_right.png" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_right.png</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_right.texture_set.json" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_right.texture_set.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_right_mers.tga" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_right_mers.tga</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_top.png" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_top.png</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_top.texture_set.json" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_top.texture_set.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_heads/rp/textures/wiki/custom_head_top_mers.tga" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_head_top_mers.tga</a></div></div></div></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="flex justify-center w-full fixed bottom-6">
+    <span id="toast" class="bg-black text-white rounded px-2 py-1">
+        Copied to Clipboard
+        </spa>
+</div>
+
+<script src="/bedrock-snippets/js/copy.js" module></script>
+<script src="/bedrock-snippets/js/sidebar-dir.js" module></script>
+<script src="/bedrock-snippets/js/sidebar.js" module></script>
+
+
+    <script src="/bedrock-snippets/js/preload.js" type="module"></script>
+</body>
+
+</html>

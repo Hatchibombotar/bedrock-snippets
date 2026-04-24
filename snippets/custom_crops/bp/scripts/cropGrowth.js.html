@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/bedrock-snippets/favicon.png">
+    <title>Bedrock Snippets: Custom Crops</title>
+    <link href="/bedrock-snippets/main.css" rel="stylesheet">
+    <script>var ROOT_DIRECTORY = "/bedrock-snippets"</script>
+</head>
+
+<body class="dark:bg-neutral-900 dark:text-white dark:fill-white flex flex-col h-[100dvh]">
+    <script src="/bedrock-snippets/js/theme.js"></script>
+    <div class="bg-neutral-100 dark:bg-neutral-800 p-2 border-b border-neutral-300 dark:border-neutral-600 flex gap-2 items-center">
+        <a href="/bedrock-snippets" class="flex flex-row items-center gap-1">
+            <img class="h-8 w-8" src="/bedrock-snippets/favicon.png" alt="">
+            <h1 class="text-lg font-semibold">Bedrock Snippets</h1>
+        </a>
+        <div class="ml-auto mr-2">
+            <div class="bg-neutral-200 dark:bg-neutral-900 flex items-center justify-center gap-2 py-1.5 px-2 rounded focus-within:outline-2">
+                <img id="theme-selector-icon" class="dark:invert h-4 w-4" src="/bedrock-snippets/OcSun2.svg" alt="">
+                <select class="dark:bg-neutral-900 cursor-pointer" id="theme-selector" title="Theme Selector">
+                    <option value="auto">
+                        System
+                    </option>
+                    <option value="light">
+                        Light
+                    </option>
+                    <option value="dark">
+                        Dark
+                    </option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    
+<div class="flex flex-col overflow-auto flex-grow">
+
+    <div class="p-2 pb-0 flex justify-between items-center">
+        <div>
+            <h1>Custom Crops</h1>
+            <a href="https://github.com/bedrock-oss/bedrock-examples/tree/main/resources/custom_crops" class="text-neutral-700 dark:text-neutral-400 text-sm hover:underline">View Source</a>
+        </div>
+        <button id="sidebar-toggle" type="button" title="Toggle Sidebar" class="h-8 w-8 bg-neutral-200 dark:bg-neutral-800 rounded flex items-center justify-center cursor-pointer">
+            <img id="sidebar-toggle-icon" class="h-4 w-4 dark:invert" src="/bedrock-snippets/OcSidebarcollapse2.svg" alt="">
+        </button>
+    </div>
+    <div class="flex flex-row p-2 flex-grow overflow-auto ">
+        <div
+        id="main-content"
+        class="w-full overflow-hidden relative bg-neutral-100 rounded-l dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600">
+            <div class="absolute pl-2 pt-1 flex flex-row w-full bg-neutral-100 dark:bg-neutral-800 rounded-l">
+                <p class="whitespace-nowrap overflow-hidden overflow-ellipsis">custom_crops &gt; bp &gt; scripts &gt; cropGrowth.js</p>
+                
+                <div class="mr-3 ml-auto flex flex-row gap-2 items-center">
+                    <button type="button" id="copy-content" title="Copy Content" class="cursor-pointer">
+                        <img class="h-4 w-4 dark:invert" src="/bedrock-snippets/OcCopy2.svg" alt="">
+                    </button>
+                    
+                </div>
+                
+            </div>
+            <div
+                class="h-full overflow-y-auto overflow-x-auto grow min-h-64 p-2 pt-8 w-full">
+                
+                <div data-content-text="import { system, EquipmentSlot, GameMode } from &#39;@minecraft/server&#39;;
+
+const cropGrowthComponentName = &#34;wiki:crop_growth&#34;;
+/** @type {import(&#34;@minecraft/server&#34;).BlockCustomComponent} */
+const BlockCropGrowthComponent = {
+    onRandomTick({ block }, { params }) {
+        // Growth parameters
+        const growthState = params.growth_state;
+        const maxGrowth = params.max_growth;
+        const minLightLevel = params.min_light_level;
+        // Ensure that the minimum light level is met
+        if (block.getLightLevel() &lt; minLightLevel)
+            return;
+        const { permutation } = block;
+        // Get the current growth of the crop
+        const growth = permutation.getState(growthState) ?? maxGrowth;
+        // Ensure that the crop is not already fully grown
+        if (growth === maxGrowth)
+            return;
+        // Only grow on some random ticks
+        if (!randomShouldCropGrow(block, params))
+            return;
+        // Increment the growth state
+        block.setPermutation(permutation.withState(growthState, growth + 1));
+    },
+    onPlayerInteract({ block, dimension, player }, { params }) {
+        if (!player)
+            return;
+        const equippable = player.getComponent(&#34;minecraft:equippable&#34;);
+        if (!equippable)
+            return;
+        const mainhand = equippable.getEquipmentSlot(EquipmentSlot.Mainhand);
+        if (!mainhand.hasItem())
+            return;
+        const hasBoneMeal = mainhand.typeId === &#34;minecraft:bone_meal&#34;; // Whether the player is holding Bone Meal
+        const hasRapidFertilizer = mainhand.typeId === &#34;minecraft:rapid_fertilizer&#34;; // Whether the player is holding Super Fertilizer (from Minecraft Eduction)
+        // Exit if the player is not holding Bone Meal or Super Fertilizer
+        if (!hasBoneMeal &amp;&amp; !hasRapidFertilizer)
+            return;
+        const isCreative = player.getGameMode() === GameMode.Creative; // Whether the player is in creative mode
+        // Growth parameters
+        const growthState = params.growth_state;
+        const growthRange = params.growth_on_fertilize;
+        const maxGrowth = params.max_growth;
+        const { permutation } = block;
+        if (hasRapidFertilizer || isCreative) {
+            // Grow the crop fully when the player is holding Super Fertilizer or is in creative mode
+            block.setPermutation(permutation.withState(growthState, maxGrowth));
+        }
+        else {
+            // Add a random amount of growth when the player is using Bone Meal and is not in creative mode
+            let growth = permutation.getState(growthState);
+            growth += randomInt(...growthRange); // Add a random amount of growth in the &#34;growth_on_fertilize&#34; range
+            growth = Math.min(growth, maxGrowth); // Prevent the new growth from being over the maximum
+            block.setPermutation(permutation.withState(growthState, growth));
+        }
+        // Decrement the item stack when the player is not in creative mode
+        if (!isCreative) {
+            if (mainhand.amount &gt; 1)
+                mainhand.amount--;
+            else
+                mainhand.setItem(undefined);
+        }
+        // Play effects
+        const effectLocation = block.center();
+        dimension.playSound(&#34;item.bone_meal.use&#34;, effectLocation);
+        dimension.spawnParticle(&#34;minecraft:crop_growth_emitter&#34;, effectLocation);
+    },
+};
+system.beforeEvents.startup.subscribe(({ blockComponentRegistry }) =&gt; {
+    blockComponentRegistry.registerCustomComponent(cropGrowthComponentName, BlockCropGrowthComponent);
+});
+/**
+ * @param {number} min The minimum integer
+ * @param {number} max The maximum integer
+ * @returns {number} A random integer between the `min` and `max` parameters (inclusive)
+ */
+function randomInt(min, max) {
+    return min + Math.floor(Math.random() * (max - min + 1));
+}
+function randomShouldCropGrow(crop, growthParams) {
+    const growthSpeed = getGrowthSpeed(crop, growthParams);
+    const growthChanceRange = Math.floor(25 / growthSpeed);
+    return randomInt(0, growthChanceRange) === 0;
+}
+/**
+ * @param {import(&#34;@minecraft/server&#34;).Block} crop The block to get the growth speed of
+ * @returns {number} A number representing the growth speed of the crop
+ */
+function getGrowthSpeed(crop, growthParams) {
+    let speed = 1;
+    // Increase growth speed based on nearby farmland blocks and their moisture
+    for (const farmland of getFarmlandIterator(crop, growthParams.farmland_search_range)) {
+        let speedModifier = growthParams.farmland_speed_modifier;
+        const moisture = farmland.permutation.getState(&#34;moisturized_amount&#34;);
+        if (moisture &gt; 0) {
+            speedModifier += growthParams.farmland_moisture_speed_modifier;
+        }
+        const isDirectlyBelowCrop = farmland.x === crop.x &amp;&amp; farmland.z === crop.z;
+        if (!isDirectlyBelowCrop) {
+            speedModifier *= growthParams.neighboring_farmland_speed_multiplier;
+        }
+        speed += speedModifier;
+    }
+    // Halves the growth speed if there are surrounding crops of the same type in vanilla (where &#34;crowding_speed_multiplier&#34; is 0.5)
+    if (isCrowded(crop)) {
+        speed *= growthParams.crowding_speed_multiplier;
+    }
+    return speed;
+}
+/**
+ * @param {import(&#34;@minecraft/server&#34;).Block} crop
+ * @param {number} searchRange Maximum offset in each direction of the X and Z axes where farmland can be found
+ * @returns {Generator} A generator that iterates through each farmland block in an area underneath the crop
+ */
+function* getFarmlandIterator(crop, searchRange) {
+    for (let x = -searchRange; x &lt;= searchRange; x++) {
+        for (let z = -searchRange; z &lt;= searchRange; z++) {
+            const block = crop.offset({ x, y: -1, z });
+            // Yield the block if it is farmland
+            const isFarmland = block?.typeId === &#34;minecraft:farmland&#34;;
+            if (isFarmland)
+                yield block;
+        }
+    }
+}
+/**
+ * @param {Block} crop
+ * @returns {boolean} Whether there are surrounding crops of the same type
+ */
+function isCrowded(crop) {
+    const northBlock = crop.north();
+    const southBlock = crop.south();
+    const westBlock = crop.west();
+    const eastBlock = crop.east();
+    const isEnclosed = (westBlock?.typeId === crop.typeId || eastBlock?.typeId === crop.typeId) &amp;&amp;
+        (northBlock?.typeId === crop.typeId || southBlock?.typeId === crop.typeId);
+    if (isEnclosed)
+        return true;
+    const isCropDiagonallyAdjacent = northBlock?.west()?.typeId === crop.typeId ||
+        northBlock?.east()?.typeId === crop.typeId ||
+        southBlock?.west()?.typeId === crop.typeId ||
+        southBlock?.east()?.typeId === crop.typeId;
+    if (isCropDiagonallyAdjacent)
+        return true;
+    return false;
+}
+
+export { cropGrowthComponentName, randomShouldCropGrow };
+" data-content-type="text" id="snippet-content"><pre class="chroma-chroma"><code><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kr">import</span> <span class="chroma-p">{</span> <span class="chroma-nx">system</span><span class="chroma-p">,</span> <span class="chroma-nx">EquipmentSlot</span><span class="chroma-p">,</span> <span class="chroma-nx">GameMode</span> <span class="chroma-p">}</span> <span class="chroma-kr">from</span> <span class="chroma-s1">&#39;@minecraft/server&#39;</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kr">const</span> <span class="chroma-nx">cropGrowthComponentName</span> <span class="chroma-o">=</span> <span class="chroma-s2">&#34;wiki:crop_growth&#34;</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm">/** @type {import(&#34;@minecraft/server&#34;).BlockCustomComponent} */</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kr">const</span> <span class="chroma-nx">BlockCropGrowthComponent</span> <span class="chroma-o">=</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-nx">onRandomTick</span><span class="chroma-p">(</span><span class="chroma-p">{</span> <span class="chroma-nx">block</span> <span class="chroma-p">}</span><span class="chroma-p">,</span> <span class="chroma-p">{</span> <span class="chroma-nx">params</span> <span class="chroma-p">}</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Growth parameters
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-kr">const</span> <span class="chroma-nx">growthState</span> <span class="chroma-o">=</span> <span class="chroma-nx">params</span><span class="chroma-p">.</span><span class="chroma-nx">growth_state</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-nx">maxGrowth</span> <span class="chroma-o">=</span> <span class="chroma-nx">params</span><span class="chroma-p">.</span><span class="chroma-nx">max_growth</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-nx">minLightLevel</span> <span class="chroma-o">=</span> <span class="chroma-nx">params</span><span class="chroma-p">.</span><span class="chroma-nx">min_light_level</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Ensure that the minimum light level is met
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">block</span><span class="chroma-p">.</span><span class="chroma-nx">getLightLevel</span><span class="chroma-p">(</span><span class="chroma-p">)</span> <span class="chroma-o">&lt;</span> <span class="chroma-nx">minLightLevel</span><span class="chroma-p">)</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-k">return</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-p">{</span> <span class="chroma-nx">permutation</span> <span class="chroma-p">}</span> <span class="chroma-o">=</span> <span class="chroma-nx">block</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Get the current growth of the crop
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-kr">const</span> <span class="chroma-nx">growth</span> <span class="chroma-o">=</span> <span class="chroma-nx">permutation</span><span class="chroma-p">.</span><span class="chroma-nx">getState</span><span class="chroma-p">(</span><span class="chroma-nx">growthState</span><span class="chroma-p">)</span> <span class="chroma-o">?</span><span class="chroma-o">?</span> <span class="chroma-nx">maxGrowth</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Ensure that the crop is not already fully grown
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">growth</span> <span class="chroma-o">===</span> <span class="chroma-nx">maxGrowth</span><span class="chroma-p">)</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-k">return</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Only grow on some random ticks
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-o">!</span><span class="chroma-nx">randomShouldCropGrow</span><span class="chroma-p">(</span><span class="chroma-nx">block</span><span class="chroma-p">,</span> <span class="chroma-nx">params</span><span class="chroma-p">)</span><span class="chroma-p">)</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-k">return</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Increment the growth state
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-nx">block</span><span class="chroma-p">.</span><span class="chroma-nx">setPermutation</span><span class="chroma-p">(</span><span class="chroma-nx">permutation</span><span class="chroma-p">.</span><span class="chroma-nx">withState</span><span class="chroma-p">(</span><span class="chroma-nx">growthState</span><span class="chroma-p">,</span> <span class="chroma-nx">growth</span> <span class="chroma-o">+</span> <span class="chroma-mi">1</span><span class="chroma-p">)</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-p">}</span><span class="chroma-p">,</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-nx">onPlayerInteract</span><span class="chroma-p">(</span><span class="chroma-p">{</span> <span class="chroma-nx">block</span><span class="chroma-p">,</span> <span class="chroma-nx">dimension</span><span class="chroma-p">,</span> <span class="chroma-nx">player</span> <span class="chroma-p">}</span><span class="chroma-p">,</span> <span class="chroma-p">{</span> <span class="chroma-nx">params</span> <span class="chroma-p">}</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-o">!</span><span class="chroma-nx">player</span><span class="chroma-p">)</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-k">return</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-nx">equippable</span> <span class="chroma-o">=</span> <span class="chroma-nx">player</span><span class="chroma-p">.</span><span class="chroma-nx">getComponent</span><span class="chroma-p">(</span><span class="chroma-s2">&#34;minecraft:equippable&#34;</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-o">!</span><span class="chroma-nx">equippable</span><span class="chroma-p">)</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-k">return</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-nx">mainhand</span> <span class="chroma-o">=</span> <span class="chroma-nx">equippable</span><span class="chroma-p">.</span><span class="chroma-nx">getEquipmentSlot</span><span class="chroma-p">(</span><span class="chroma-nx">EquipmentSlot</span><span class="chroma-p">.</span><span class="chroma-nx">Mainhand</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-o">!</span><span class="chroma-nx">mainhand</span><span class="chroma-p">.</span><span class="chroma-nx">hasItem</span><span class="chroma-p">(</span><span class="chroma-p">)</span><span class="chroma-p">)</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-k">return</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-nx">hasBoneMeal</span> <span class="chroma-o">=</span> <span class="chroma-nx">mainhand</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">===</span> <span class="chroma-s2">&#34;minecraft:bone_meal&#34;</span><span class="chroma-p">;</span> <span class="chroma-c1">// Whether the player is holding Bone Meal
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-kr">const</span> <span class="chroma-nx">hasRapidFertilizer</span> <span class="chroma-o">=</span> <span class="chroma-nx">mainhand</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">===</span> <span class="chroma-s2">&#34;minecraft:rapid_fertilizer&#34;</span><span class="chroma-p">;</span> <span class="chroma-c1">// Whether the player is holding Super Fertilizer (from Minecraft Eduction)
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-c1">// Exit if the player is not holding Bone Meal or Super Fertilizer
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-o">!</span><span class="chroma-nx">hasBoneMeal</span> <span class="chroma-o">&amp;&amp;</span> <span class="chroma-o">!</span><span class="chroma-nx">hasRapidFertilizer</span><span class="chroma-p">)</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-k">return</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-nx">isCreative</span> <span class="chroma-o">=</span> <span class="chroma-nx">player</span><span class="chroma-p">.</span><span class="chroma-nx">getGameMode</span><span class="chroma-p">(</span><span class="chroma-p">)</span> <span class="chroma-o">===</span> <span class="chroma-nx">GameMode</span><span class="chroma-p">.</span><span class="chroma-nx">Creative</span><span class="chroma-p">;</span> <span class="chroma-c1">// Whether the player is in creative mode
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-c1">// Growth parameters
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-kr">const</span> <span class="chroma-nx">growthState</span> <span class="chroma-o">=</span> <span class="chroma-nx">params</span><span class="chroma-p">.</span><span class="chroma-nx">growth_state</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-nx">growthRange</span> <span class="chroma-o">=</span> <span class="chroma-nx">params</span><span class="chroma-p">.</span><span class="chroma-nx">growth_on_fertilize</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-nx">maxGrowth</span> <span class="chroma-o">=</span> <span class="chroma-nx">params</span><span class="chroma-p">.</span><span class="chroma-nx">max_growth</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-p">{</span> <span class="chroma-nx">permutation</span> <span class="chroma-p">}</span> <span class="chroma-o">=</span> <span class="chroma-nx">block</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">hasRapidFertilizer</span> <span class="chroma-o">||</span> <span class="chroma-nx">isCreative</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-c1">// Grow the crop fully when the player is holding Super Fertilizer or is in creative mode
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>            <span class="chroma-nx">block</span><span class="chroma-p">.</span><span class="chroma-nx">setPermutation</span><span class="chroma-p">(</span><span class="chroma-nx">permutation</span><span class="chroma-p">.</span><span class="chroma-nx">withState</span><span class="chroma-p">(</span><span class="chroma-nx">growthState</span><span class="chroma-p">,</span> <span class="chroma-nx">maxGrowth</span><span class="chroma-p">)</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">else</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-c1">// Add a random amount of growth when the player is using Bone Meal and is not in creative mode
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>            <span class="chroma-kd">let</span> <span class="chroma-nx">growth</span> <span class="chroma-o">=</span> <span class="chroma-nx">permutation</span><span class="chroma-p">.</span><span class="chroma-nx">getState</span><span class="chroma-p">(</span><span class="chroma-nx">growthState</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-nx">growth</span> <span class="chroma-o">+=</span> <span class="chroma-nx">randomInt</span><span class="chroma-p">(</span><span class="chroma-p">.</span><span class="chroma-p">.</span><span class="chroma-p">.</span><span class="chroma-nx">growthRange</span><span class="chroma-p">)</span><span class="chroma-p">;</span> <span class="chroma-c1">// Add a random amount of growth in the &#34;growth_on_fertilize&#34; range
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>            <span class="chroma-nx">growth</span> <span class="chroma-o">=</span> <span class="chroma-nb">Math</span><span class="chroma-p">.</span><span class="chroma-nx">min</span><span class="chroma-p">(</span><span class="chroma-nx">growth</span><span class="chroma-p">,</span> <span class="chroma-nx">maxGrowth</span><span class="chroma-p">)</span><span class="chroma-p">;</span> <span class="chroma-c1">// Prevent the new growth from being over the maximum
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>            <span class="chroma-nx">block</span><span class="chroma-p">.</span><span class="chroma-nx">setPermutation</span><span class="chroma-p">(</span><span class="chroma-nx">permutation</span><span class="chroma-p">.</span><span class="chroma-nx">withState</span><span class="chroma-p">(</span><span class="chroma-nx">growthState</span><span class="chroma-p">,</span> <span class="chroma-nx">growth</span><span class="chroma-p">)</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Decrement the item stack when the player is not in creative mode
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-o">!</span><span class="chroma-nx">isCreative</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">mainhand</span><span class="chroma-p">.</span><span class="chroma-nx">amount</span> <span class="chroma-o">&gt;</span> <span class="chroma-mi">1</span><span class="chroma-p">)</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-nx">mainhand</span><span class="chroma-p">.</span><span class="chroma-nx">amount</span><span class="chroma-o">--</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-k">else</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-nx">mainhand</span><span class="chroma-p">.</span><span class="chroma-nx">setItem</span><span class="chroma-p">(</span><span class="chroma-kc">undefined</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Play effects
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-kr">const</span> <span class="chroma-nx">effectLocation</span> <span class="chroma-o">=</span> <span class="chroma-nx">block</span><span class="chroma-p">.</span><span class="chroma-nx">center</span><span class="chroma-p">(</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-nx">dimension</span><span class="chroma-p">.</span><span class="chroma-nx">playSound</span><span class="chroma-p">(</span><span class="chroma-s2">&#34;item.bone_meal.use&#34;</span><span class="chroma-p">,</span> <span class="chroma-nx">effectLocation</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-nx">dimension</span><span class="chroma-p">.</span><span class="chroma-nx">spawnParticle</span><span class="chroma-p">(</span><span class="chroma-s2">&#34;minecraft:crop_growth_emitter&#34;</span><span class="chroma-p">,</span> <span class="chroma-nx">effectLocation</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-p">}</span><span class="chroma-p">,</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-nx">system</span><span class="chroma-p">.</span><span class="chroma-nx">beforeEvents</span><span class="chroma-p">.</span><span class="chroma-nx">startup</span><span class="chroma-p">.</span><span class="chroma-nx">subscribe</span><span class="chroma-p">(</span><span class="chroma-p">(</span><span class="chroma-p">{</span> <span class="chroma-nx">blockComponentRegistry</span> <span class="chroma-p">}</span><span class="chroma-p">)</span> <span class="chroma-o">=</span><span class="chroma-o">&gt;</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-nx">blockComponentRegistry</span><span class="chroma-p">.</span><span class="chroma-nx">registerCustomComponent</span><span class="chroma-p">(</span><span class="chroma-nx">cropGrowthComponentName</span><span class="chroma-p">,</span> <span class="chroma-nx">BlockCropGrowthComponent</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm">/**
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm"> * @param {number} min The minimum integer
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm"> * @param {number} max The maximum integer
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm"> * @returns {number} A random integer between the `min` and `max` parameters (inclusive)
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm"> */</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kd">function</span> <span class="chroma-nx">randomInt</span><span class="chroma-p">(</span><span class="chroma-nx">min</span><span class="chroma-p">,</span> <span class="chroma-nx">max</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">return</span> <span class="chroma-nx">min</span> <span class="chroma-o">+</span> <span class="chroma-nb">Math</span><span class="chroma-p">.</span><span class="chroma-nx">floor</span><span class="chroma-p">(</span><span class="chroma-nb">Math</span><span class="chroma-p">.</span><span class="chroma-nx">random</span><span class="chroma-p">(</span><span class="chroma-p">)</span> <span class="chroma-o">*</span> <span class="chroma-p">(</span><span class="chroma-nx">max</span> <span class="chroma-o">-</span> <span class="chroma-nx">min</span> <span class="chroma-o">+</span> <span class="chroma-mi">1</span><span class="chroma-p">)</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kd">function</span> <span class="chroma-nx">randomShouldCropGrow</span><span class="chroma-p">(</span><span class="chroma-nx">crop</span><span class="chroma-p">,</span> <span class="chroma-nx">growthParams</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-kr">const</span> <span class="chroma-nx">growthSpeed</span> <span class="chroma-o">=</span> <span class="chroma-nx">getGrowthSpeed</span><span class="chroma-p">(</span><span class="chroma-nx">crop</span><span class="chroma-p">,</span> <span class="chroma-nx">growthParams</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-kr">const</span> <span class="chroma-nx">growthChanceRange</span> <span class="chroma-o">=</span> <span class="chroma-nb">Math</span><span class="chroma-p">.</span><span class="chroma-nx">floor</span><span class="chroma-p">(</span><span class="chroma-mi">25</span> <span class="chroma-o">/</span> <span class="chroma-nx">growthSpeed</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">return</span> <span class="chroma-nx">randomInt</span><span class="chroma-p">(</span><span class="chroma-mi">0</span><span class="chroma-p">,</span> <span class="chroma-nx">growthChanceRange</span><span class="chroma-p">)</span> <span class="chroma-o">===</span> <span class="chroma-mi">0</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm">/**
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm"> * @param {import(&#34;@minecraft/server&#34;).Block} crop The block to get the growth speed of
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm"> * @returns {number} A number representing the growth speed of the crop
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm"> */</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kd">function</span> <span class="chroma-nx">getGrowthSpeed</span><span class="chroma-p">(</span><span class="chroma-nx">crop</span><span class="chroma-p">,</span> <span class="chroma-nx">growthParams</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-kd">let</span> <span class="chroma-nx">speed</span> <span class="chroma-o">=</span> <span class="chroma-mi">1</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-c1">// Increase growth speed based on nearby farmland blocks and their moisture
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>    <span class="chroma-k">for</span> <span class="chroma-p">(</span><span class="chroma-kr">const</span> <span class="chroma-nx">farmland</span> <span class="chroma-k">of</span> <span class="chroma-nx">getFarmlandIterator</span><span class="chroma-p">(</span><span class="chroma-nx">crop</span><span class="chroma-p">,</span> <span class="chroma-nx">growthParams</span><span class="chroma-p">.</span><span class="chroma-nx">farmland_search_range</span><span class="chroma-p">)</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kd">let</span> <span class="chroma-nx">speedModifier</span> <span class="chroma-o">=</span> <span class="chroma-nx">growthParams</span><span class="chroma-p">.</span><span class="chroma-nx">farmland_speed_modifier</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-nx">moisture</span> <span class="chroma-o">=</span> <span class="chroma-nx">farmland</span><span class="chroma-p">.</span><span class="chroma-nx">permutation</span><span class="chroma-p">.</span><span class="chroma-nx">getState</span><span class="chroma-p">(</span><span class="chroma-s2">&#34;moisturized_amount&#34;</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">moisture</span> <span class="chroma-o">&gt;</span> <span class="chroma-mi">0</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-nx">speedModifier</span> <span class="chroma-o">+=</span> <span class="chroma-nx">growthParams</span><span class="chroma-p">.</span><span class="chroma-nx">farmland_moisture_speed_modifier</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-nx">isDirectlyBelowCrop</span> <span class="chroma-o">=</span> <span class="chroma-nx">farmland</span><span class="chroma-p">.</span><span class="chroma-nx">x</span> <span class="chroma-o">===</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">x</span> <span class="chroma-o">&amp;&amp;</span> <span class="chroma-nx">farmland</span><span class="chroma-p">.</span><span class="chroma-nx">z</span> <span class="chroma-o">===</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">z</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-o">!</span><span class="chroma-nx">isDirectlyBelowCrop</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-nx">speedModifier</span> <span class="chroma-o">*=</span> <span class="chroma-nx">growthParams</span><span class="chroma-p">.</span><span class="chroma-nx">neighboring_farmland_speed_multiplier</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-nx">speed</span> <span class="chroma-o">+=</span> <span class="chroma-nx">speedModifier</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-c1">// Halves the growth speed if there are surrounding crops of the same type in vanilla (where &#34;crowding_speed_multiplier&#34; is 0.5)
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>    <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">isCrowded</span><span class="chroma-p">(</span><span class="chroma-nx">crop</span><span class="chroma-p">)</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-nx">speed</span> <span class="chroma-o">*=</span> <span class="chroma-nx">growthParams</span><span class="chroma-p">.</span><span class="chroma-nx">crowding_speed_multiplier</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">return</span> <span class="chroma-nx">speed</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm">/**
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm"> * @param {import(&#34;@minecraft/server&#34;).Block} crop
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm"> * @param {number} searchRange Maximum offset in each direction of the X and Z axes where farmland can be found
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm"> * @returns {Generator} A generator that iterates through each farmland block in an area underneath the crop
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm"> */</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kd">function</span><span class="chroma-o">*</span> <span class="chroma-nx">getFarmlandIterator</span><span class="chroma-p">(</span><span class="chroma-nx">crop</span><span class="chroma-p">,</span> <span class="chroma-nx">searchRange</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">for</span> <span class="chroma-p">(</span><span class="chroma-kd">let</span> <span class="chroma-nx">x</span> <span class="chroma-o">=</span> <span class="chroma-o">-</span><span class="chroma-nx">searchRange</span><span class="chroma-p">;</span> <span class="chroma-nx">x</span> <span class="chroma-o">&lt;=</span> <span class="chroma-nx">searchRange</span><span class="chroma-p">;</span> <span class="chroma-nx">x</span><span class="chroma-o">++</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">for</span> <span class="chroma-p">(</span><span class="chroma-kd">let</span> <span class="chroma-nx">z</span> <span class="chroma-o">=</span> <span class="chroma-o">-</span><span class="chroma-nx">searchRange</span><span class="chroma-p">;</span> <span class="chroma-nx">z</span> <span class="chroma-o">&lt;=</span> <span class="chroma-nx">searchRange</span><span class="chroma-p">;</span> <span class="chroma-nx">z</span><span class="chroma-o">++</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-kr">const</span> <span class="chroma-nx">block</span> <span class="chroma-o">=</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">offset</span><span class="chroma-p">(</span><span class="chroma-p">{</span> <span class="chroma-nx">x</span><span class="chroma-p">,</span> <span class="chroma-nx">y</span><span class="chroma-o">:</span> <span class="chroma-o">-</span><span class="chroma-mi">1</span><span class="chroma-p">,</span> <span class="chroma-nx">z</span> <span class="chroma-p">}</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-c1">// Yield the block if it is farmland
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>            <span class="chroma-kr">const</span> <span class="chroma-nx">isFarmland</span> <span class="chroma-o">=</span> <span class="chroma-nx">block</span><span class="chroma-o">?</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">===</span> <span class="chroma-s2">&#34;minecraft:farmland&#34;</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">isFarmland</span><span class="chroma-p">)</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-k">yield</span> <span class="chroma-nx">block</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm">/**
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm"> * @param {Block} crop
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm"> * @returns {boolean} Whether there are surrounding crops of the same type
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm"> */</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kd">function</span> <span class="chroma-nx">isCrowded</span><span class="chroma-p">(</span><span class="chroma-nx">crop</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-kr">const</span> <span class="chroma-nx">northBlock</span> <span class="chroma-o">=</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">north</span><span class="chroma-p">(</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-kr">const</span> <span class="chroma-nx">southBlock</span> <span class="chroma-o">=</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">south</span><span class="chroma-p">(</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-kr">const</span> <span class="chroma-nx">westBlock</span> <span class="chroma-o">=</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">west</span><span class="chroma-p">(</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-kr">const</span> <span class="chroma-nx">eastBlock</span> <span class="chroma-o">=</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">east</span><span class="chroma-p">(</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-kr">const</span> <span class="chroma-nx">isEnclosed</span> <span class="chroma-o">=</span> <span class="chroma-p">(</span><span class="chroma-nx">westBlock</span><span class="chroma-o">?</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">===</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">||</span> <span class="chroma-nx">eastBlock</span><span class="chroma-o">?</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">===</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span><span class="chroma-p">)</span> <span class="chroma-o">&amp;&amp;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-p">(</span><span class="chroma-nx">northBlock</span><span class="chroma-o">?</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">===</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">||</span> <span class="chroma-nx">southBlock</span><span class="chroma-o">?</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">===</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">isEnclosed</span><span class="chroma-p">)</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">return</span> <span class="chroma-kc">true</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-kr">const</span> <span class="chroma-nx">isCropDiagonallyAdjacent</span> <span class="chroma-o">=</span> <span class="chroma-nx">northBlock</span><span class="chroma-o">?</span><span class="chroma-p">.</span><span class="chroma-nx">west</span><span class="chroma-p">(</span><span class="chroma-p">)</span><span class="chroma-o">?</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">===</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">||</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-nx">northBlock</span><span class="chroma-o">?</span><span class="chroma-p">.</span><span class="chroma-nx">east</span><span class="chroma-p">(</span><span class="chroma-p">)</span><span class="chroma-o">?</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">===</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">||</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-nx">southBlock</span><span class="chroma-o">?</span><span class="chroma-p">.</span><span class="chroma-nx">west</span><span class="chroma-p">(</span><span class="chroma-p">)</span><span class="chroma-o">?</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">===</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">||</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-nx">southBlock</span><span class="chroma-o">?</span><span class="chroma-p">.</span><span class="chroma-nx">east</span><span class="chroma-p">(</span><span class="chroma-p">)</span><span class="chroma-o">?</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">===</span> <span class="chroma-nx">crop</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">isCropDiagonallyAdjacent</span><span class="chroma-p">)</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">return</span> <span class="chroma-kc">true</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">return</span> <span class="chroma-kc">false</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kr">export</span> <span class="chroma-p">{</span> <span class="chroma-nx">cropGrowthComponentName</span><span class="chroma-p">,</span> <span class="chroma-nx">randomShouldCropGrow</span> <span class="chroma-p">}</span><span class="chroma-p">;</span>
+</span></span></code></pre></div>
+                
+            </div>
+        </div>
+
+        <div
+            id="sidebar"
+            class="w-64 bg-neutral-100 dark:bg-neutral-800 border-r border-t border-b border-neutral-300 dark:border-neutral-600 rounded-r flex flex-col text-sm">
+            <div class="border-b border-neutral-300 dark:border-neutral-600 flex flex-row w-full items-center">
+                <p class="px-1 my-1 mx-1 font-semibold">Custom Crops</p>
+                
+            </div>
+            <div class="flex flex-col overflow-y-auto overflow-x-hidden w-52">
+                <div class="flex flex-col" data-directory-content=""><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5" href="/bedrock-snippets/snippets/custom_crops/">readme</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="bp/" onclick="toggleDir('bp/')" style="padding-left: calc(var(--spacing) * 1);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">bp</a><div class="flex flex-col" data-directory-content="bp/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="bp/blocks/" onclick="toggleDir('bp/blocks/')" style="padding-left: calc(var(--spacing) * 3);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">blocks</a><div class="flex flex-col" data-directory-content="bp/blocks/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/bp/blocks/custom_crop.json" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>custom_crop.json</a></div><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/bp/contents.json" style="padding-left: calc(var(--spacing) * 3);"><div class="mr-2 inline"></div>contents.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="bp/items/" onclick="toggleDir('bp/items/')" style="padding-left: calc(var(--spacing) * 3);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">items</a><div class="flex flex-col" data-directory-content="bp/items/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/bp/items/custom_food.json" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>custom_food.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/bp/items/custom_seeds.json" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>custom_seeds.json</a></div><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="bp/loot_tables/" onclick="toggleDir('bp/loot_tables/')" style="padding-left: calc(var(--spacing) * 3);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">loot_tables</a><div class="flex flex-col" data-directory-content="bp/loot_tables/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="bp/loot_tables/wiki/" onclick="toggleDir('bp/loot_tables/wiki/')" style="padding-left: calc(var(--spacing) * 5);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">wiki</a><div class="flex flex-col" data-directory-content="bp/loot_tables/wiki/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="bp/loot_tables/wiki/blocks/" onclick="toggleDir('bp/loot_tables/wiki/blocks/')" style="padding-left: calc(var(--spacing) * 7);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">blocks</a><div class="flex flex-col" data-directory-content="bp/loot_tables/wiki/blocks/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/bp/loot_tables/wiki/blocks/custom_crop_mature.json" style="padding-left: calc(var(--spacing) * 9);"><div class="mr-2 inline"></div>custom_crop_mature.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/bp/loot_tables/wiki/blocks/custom_crop_young.json" style="padding-left: calc(var(--spacing) * 9);"><div class="mr-2 inline"></div>custom_crop_young.json</a></div></div></div><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/bp/manifest.json" style="padding-left: calc(var(--spacing) * 3);"><div class="mr-2 inline"></div>manifest.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/bp/pack_icon.png" style="padding-left: calc(var(--spacing) * 3);"><div class="mr-2 inline"></div>pack_icon.png</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="bp/scripts/" onclick="toggleDir('bp/scripts/')" style="padding-left: calc(var(--spacing) * 3);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">scripts</a><div class="flex flex-col" data-directory-content="bp/scripts/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/bp/scripts/cropGrowth.js" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>cropGrowth.js</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/bp/scripts/index.js" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>index.js</a></div></div><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="rp/" onclick="toggleDir('rp/')" style="padding-left: calc(var(--spacing) * 1);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">rp</a><div class="flex flex-col" data-directory-content="rp/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/blocks.json" style="padding-left: calc(var(--spacing) * 3);"><div class="mr-2 inline"></div>blocks.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/contents.json" style="padding-left: calc(var(--spacing) * 3);"><div class="mr-2 inline"></div>contents.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/manifest.json" style="padding-left: calc(var(--spacing) * 3);"><div class="mr-2 inline"></div>manifest.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="rp/models/" onclick="toggleDir('rp/models/')" style="padding-left: calc(var(--spacing) * 3);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">models</a><div class="flex flex-col" data-directory-content="rp/models/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="rp/models/blocks/" onclick="toggleDir('rp/models/blocks/')" style="padding-left: calc(var(--spacing) * 5);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">blocks</a><div class="flex flex-col" data-directory-content="rp/models/blocks/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/models/blocks/custom_crop.geo.json" style="padding-left: calc(var(--spacing) * 7);"><div class="mr-2 inline"></div>custom_crop.geo.json</a></div></div><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/pack_icon.png" style="padding-left: calc(var(--spacing) * 3);"><div class="mr-2 inline"></div>pack_icon.png</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="rp/texts/" onclick="toggleDir('rp/texts/')" style="padding-left: calc(var(--spacing) * 3);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">texts</a><div class="flex flex-col" data-directory-content="rp/texts/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/texts/en_US.lang" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>en_US.lang</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/texts/languages.json" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>languages.json</a></div><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="rp/textures/" onclick="toggleDir('rp/textures/')" style="padding-left: calc(var(--spacing) * 3);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">textures</a><div class="flex flex-col" data-directory-content="rp/textures/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/textures/item_texture.json" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>item_texture.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/textures/terrain_texture.json" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>terrain_texture.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/textures/textures_list.json" style="padding-left: calc(var(--spacing) * 5);"><div class="mr-2 inline"></div>textures_list.json</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="rp/textures/wiki/" onclick="toggleDir('rp/textures/wiki/')" style="padding-left: calc(var(--spacing) * 5);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">wiki</a><div class="flex flex-col" data-directory-content="rp/textures/wiki/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="rp/textures/wiki/blocks/" onclick="toggleDir('rp/textures/wiki/blocks/')" style="padding-left: calc(var(--spacing) * 7);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">blocks</a><div class="flex flex-col" data-directory-content="rp/textures/wiki/blocks/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/textures/wiki/blocks/custom_crop_0.png" style="padding-left: calc(var(--spacing) * 9);"><div class="mr-2 inline"></div>custom_crop_0.png</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/textures/wiki/blocks/custom_crop_1.png" style="padding-left: calc(var(--spacing) * 9);"><div class="mr-2 inline"></div>custom_crop_1.png</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/textures/wiki/blocks/custom_crop_2.png" style="padding-left: calc(var(--spacing) * 9);"><div class="mr-2 inline"></div>custom_crop_2.png</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/textures/wiki/blocks/custom_crop_3.png" style="padding-left: calc(var(--spacing) * 9);"><div class="mr-2 inline"></div>custom_crop_3.png</a></div><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" data-directory-header="rp/textures/wiki/items/" onclick="toggleDir('rp/textures/wiki/items/')" style="padding-left: calc(var(--spacing) * 7);"><img class="inline w-4" src="/bedrock-snippets/OcChevrondown2.svg">items</a><div class="flex flex-col" data-directory-content="rp/textures/wiki/items/"><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/textures/wiki/items/custom_food.png" style="padding-left: calc(var(--spacing) * 9);"><div class="mr-2 inline"></div>custom_food.png</a><a class="hover:bg-neutral-200 focus:bg-neutral-200 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 px-1 py-0.5 cursor-pointer overflow-hidden text-ellipsis" href="/bedrock-snippets/snippets/custom_crops/rp/textures/wiki/items/custom_seeds.png" style="padding-left: calc(var(--spacing) * 9);"><div class="mr-2 inline"></div>custom_seeds.png</a></div></div></div></div></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="flex justify-center w-full fixed bottom-6">
+    <span id="toast" class="bg-black text-white rounded px-2 py-1">
+        Copied to Clipboard
+        </spa>
+</div>
+
+<script src="/bedrock-snippets/js/copy.js" module></script>
+<script src="/bedrock-snippets/js/sidebar-dir.js" module></script>
+<script src="/bedrock-snippets/js/sidebar.js" module></script>
+
+
+    <script src="/bedrock-snippets/js/preload.js" type="module"></script>
+</body>
+
+</html>
