@@ -65,70 +65,90 @@
             <div
                 class="h-full overflow-y-auto overflow-x-auto grow min-h-64 p-2 pt-8 w-full">
                 
-                <div data-content-text="import { world, system, ItemStack } from &#39;@minecraft/server&#39;;
+                <div data-content-text="import { world, system, ItemStack } from &#34;@minecraft/server&#34;;
 
 // Object where keys are entity types and values are the item to drop when exploded by a charged creeper
 const heads = {
     &#34;minecraft:husk&#34;: &#34;wiki:custom_head&#34;,
 };
+
 // Set containing the unique IDs of charged creepers that have exploded within the last tick
 const explodingChargedCreepers = new Set();
+
 world.beforeEvents.explosion.subscribe(({ source }) =&gt; {
-    if (!source)
-        return;
+    if (!source) return;
+
     const isCreeper = source.typeId === &#34;minecraft:creeper&#34;;
     const isCharged = source.hasComponent(&#34;minecraft:is_charged&#34;);
+
     if (isCreeper &amp;&amp; isCharged) {
         // Add the charged creeper&#39;s ID to the set
         explodingChargedCreepers.add(source.id);
+
         // Remove the ID after the next tick
         system.runTimeout(() =&gt; explodingChargedCreepers.delete(source.id), 1);
     }
 });
-world.afterEvents.entityDie.subscribe((event) =&gt; {
-    const { damagingEntity } = event.damageSource;
-    if (!damagingEntity || !world.gameRules.doMobLoot)
-        return;
-    // Check whether the damaging entity is one of the charged creepers that exploded within the last tick
-    const explodedByChargedCreeper = explodingChargedCreepers.has(damagingEntity.id);
-    if (explodedByChargedCreeper) {
-        const { dimension, location, typeId } = event.deadEntity;
-        const head = heads[typeId];
-        dimension.spawnItem(new ItemStack(head), location);
-    }
-}, { entityTypes: Object.keys(heads) });
-" data-content-type="text" id="snippet-content"><pre class="chroma-chroma"><code><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kr">import</span> <span class="chroma-p">{</span> <span class="chroma-nx">world</span><span class="chroma-p">,</span> <span class="chroma-nx">system</span><span class="chroma-p">,</span> <span class="chroma-nx">ItemStack</span> <span class="chroma-p">}</span> <span class="chroma-kr">from</span> <span class="chroma-s1">&#39;@minecraft/server&#39;</span><span class="chroma-p">;</span>
+
+world.afterEvents.entityDie.subscribe(
+    (event) =&gt; {
+        const { damagingEntity } = event.damageSource;
+        if (!damagingEntity || !world.gameRules.doMobLoot) return;
+
+        // Check whether the damaging entity is one of the charged creepers that exploded within the last tick
+        const explodedByChargedCreeper = explodingChargedCreepers.has(damagingEntity.id);
+
+        if (explodedByChargedCreeper) {
+            const { dimension, location, typeId } = event.deadEntity;
+            const head = heads[typeId];
+
+            dimension.spawnItem(new ItemStack(head), location);
+        }
+    },
+    { entityTypes: Object.keys(heads) }
+);
+" data-content-type="text" id="snippet-content"><pre class="chroma-chroma"><code><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kr">import</span> <span class="chroma-p">{</span> <span class="chroma-nx">world</span><span class="chroma-p">,</span> <span class="chroma-nx">system</span><span class="chroma-p">,</span> <span class="chroma-nx">ItemStack</span> <span class="chroma-p">}</span> <span class="chroma-kr">from</span> <span class="chroma-s2">&#34;@minecraft/server&#34;</span><span class="chroma-p">;</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1">// Object where keys are entity types and values are the item to drop when exploded by a charged creeper
 </span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span><span class="chroma-kr">const</span> <span class="chroma-nx">heads</span> <span class="chroma-o">=</span> <span class="chroma-p">{</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-s2">&#34;minecraft:husk&#34;</span><span class="chroma-o">:</span> <span class="chroma-s2">&#34;wiki:custom_head&#34;</span><span class="chroma-p">,</span>
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1">// Set containing the unique IDs of charged creepers that have exploded within the last tick
 </span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span><span class="chroma-kr">const</span> <span class="chroma-nx">explodingChargedCreepers</span> <span class="chroma-o">=</span> <span class="chroma-k">new</span> <span class="chroma-nx">Set</span><span class="chroma-p">(</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-nx">world</span><span class="chroma-p">.</span><span class="chroma-nx">beforeEvents</span><span class="chroma-p">.</span><span class="chroma-nx">explosion</span><span class="chroma-p">.</span><span class="chroma-nx">subscribe</span><span class="chroma-p">(</span><span class="chroma-p">(</span><span class="chroma-p">{</span> <span class="chroma-nx">source</span> <span class="chroma-p">}</span><span class="chroma-p">)</span> <span class="chroma-o">=</span><span class="chroma-o">&gt;</span> <span class="chroma-p">{</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-o">!</span><span class="chroma-nx">source</span><span class="chroma-p">)</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">return</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-o">!</span><span class="chroma-nx">source</span><span class="chroma-p">)</span> <span class="chroma-k">return</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
 </span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-kr">const</span> <span class="chroma-nx">isCreeper</span> <span class="chroma-o">=</span> <span class="chroma-nx">source</span><span class="chroma-p">.</span><span class="chroma-nx">typeId</span> <span class="chroma-o">===</span> <span class="chroma-s2">&#34;minecraft:creeper&#34;</span><span class="chroma-p">;</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-kr">const</span> <span class="chroma-nx">isCharged</span> <span class="chroma-o">=</span> <span class="chroma-nx">source</span><span class="chroma-p">.</span><span class="chroma-nx">hasComponent</span><span class="chroma-p">(</span><span class="chroma-s2">&#34;minecraft:is_charged&#34;</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
 </span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">isCreeper</span> <span class="chroma-o">&amp;&amp;</span> <span class="chroma-nx">isCharged</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Add the charged creeper&#39;s ID to the set
 </span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-nx">explodingChargedCreepers</span><span class="chroma-p">.</span><span class="chroma-nx">add</span><span class="chroma-p">(</span><span class="chroma-nx">source</span><span class="chroma-p">.</span><span class="chroma-nx">id</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
 </span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Remove the ID after the next tick
 </span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-nx">system</span><span class="chroma-p">.</span><span class="chroma-nx">runTimeout</span><span class="chroma-p">(</span><span class="chroma-p">(</span><span class="chroma-p">)</span> <span class="chroma-o">=</span><span class="chroma-o">&gt;</span> <span class="chroma-nx">explodingChargedCreepers</span><span class="chroma-p">.</span><span class="chroma-k">delete</span><span class="chroma-p">(</span><span class="chroma-nx">source</span><span class="chroma-p">.</span><span class="chroma-nx">id</span><span class="chroma-p">)</span><span class="chroma-p">,</span> <span class="chroma-mi">1</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-p">}</span>
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
-</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-nx">world</span><span class="chroma-p">.</span><span class="chroma-nx">afterEvents</span><span class="chroma-p">.</span><span class="chroma-nx">entityDie</span><span class="chroma-p">.</span><span class="chroma-nx">subscribe</span><span class="chroma-p">(</span><span class="chroma-p">(</span><span class="chroma-nx">event</span><span class="chroma-p">)</span> <span class="chroma-o">=</span><span class="chroma-o">&gt;</span> <span class="chroma-p">{</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-kr">const</span> <span class="chroma-p">{</span> <span class="chroma-nx">damagingEntity</span> <span class="chroma-p">}</span> <span class="chroma-o">=</span> <span class="chroma-nx">event</span><span class="chroma-p">.</span><span class="chroma-nx">damageSource</span><span class="chroma-p">;</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-o">!</span><span class="chroma-nx">damagingEntity</span> <span class="chroma-o">||</span> <span class="chroma-o">!</span><span class="chroma-nx">world</span><span class="chroma-p">.</span><span class="chroma-nx">gameRules</span><span class="chroma-p">.</span><span class="chroma-nx">doMobLoot</span><span class="chroma-p">)</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">return</span><span class="chroma-p">;</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-c1">// Check whether the damaging entity is one of the charged creepers that exploded within the last tick
-</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>    <span class="chroma-kr">const</span> <span class="chroma-nx">explodedByChargedCreeper</span> <span class="chroma-o">=</span> <span class="chroma-nx">explodingChargedCreepers</span><span class="chroma-p">.</span><span class="chroma-nx">has</span><span class="chroma-p">(</span><span class="chroma-nx">damagingEntity</span><span class="chroma-p">.</span><span class="chroma-nx">id</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">explodedByChargedCreeper</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-p">{</span> <span class="chroma-nx">dimension</span><span class="chroma-p">,</span> <span class="chroma-nx">location</span><span class="chroma-p">,</span> <span class="chroma-nx">typeId</span> <span class="chroma-p">}</span> <span class="chroma-o">=</span> <span class="chroma-nx">event</span><span class="chroma-p">.</span><span class="chroma-nx">deadEntity</span><span class="chroma-p">;</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-nx">head</span> <span class="chroma-o">=</span> <span class="chroma-nx">heads</span><span class="chroma-p">[</span><span class="chroma-nx">typeId</span><span class="chroma-p">]</span><span class="chroma-p">;</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-nx">dimension</span><span class="chroma-p">.</span><span class="chroma-nx">spawnItem</span><span class="chroma-p">(</span><span class="chroma-k">new</span> <span class="chroma-nx">ItemStack</span><span class="chroma-p">(</span><span class="chroma-nx">head</span><span class="chroma-p">)</span><span class="chroma-p">,</span> <span class="chroma-nx">location</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-p">}</span>
-</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span><span class="chroma-p">,</span> <span class="chroma-p">{</span> <span class="chroma-nx">entityTypes</span>: <span class="chroma-kt">Object.keys</span><span class="chroma-p">(</span><span class="chroma-nx">heads</span><span class="chroma-p">)</span> <span class="chroma-p">}</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-nx">world</span><span class="chroma-p">.</span><span class="chroma-nx">afterEvents</span><span class="chroma-p">.</span><span class="chroma-nx">entityDie</span><span class="chroma-p">.</span><span class="chroma-nx">subscribe</span><span class="chroma-p">(</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-p">(</span><span class="chroma-nx">event</span><span class="chroma-p">)</span> <span class="chroma-o">=</span><span class="chroma-o">&gt;</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-p">{</span> <span class="chroma-nx">damagingEntity</span> <span class="chroma-p">}</span> <span class="chroma-o">=</span> <span class="chroma-nx">event</span><span class="chroma-p">.</span><span class="chroma-nx">damageSource</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-o">!</span><span class="chroma-nx">damagingEntity</span> <span class="chroma-o">||</span> <span class="chroma-o">!</span><span class="chroma-nx">world</span><span class="chroma-p">.</span><span class="chroma-nx">gameRules</span><span class="chroma-p">.</span><span class="chroma-nx">doMobLoot</span><span class="chroma-p">)</span> <span class="chroma-k">return</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Check whether the damaging entity is one of the charged creepers that exploded within the last tick
+</span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-kr">const</span> <span class="chroma-nx">explodedByChargedCreeper</span> <span class="chroma-o">=</span> <span class="chroma-nx">explodingChargedCreepers</span><span class="chroma-p">.</span><span class="chroma-nx">has</span><span class="chroma-p">(</span><span class="chroma-nx">damagingEntity</span><span class="chroma-p">.</span><span class="chroma-nx">id</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">explodedByChargedCreeper</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-kr">const</span> <span class="chroma-p">{</span> <span class="chroma-nx">dimension</span><span class="chroma-p">,</span> <span class="chroma-nx">location</span><span class="chroma-p">,</span> <span class="chroma-nx">typeId</span> <span class="chroma-p">}</span> <span class="chroma-o">=</span> <span class="chroma-nx">event</span><span class="chroma-p">.</span><span class="chroma-nx">deadEntity</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-kr">const</span> <span class="chroma-nx">head</span> <span class="chroma-o">=</span> <span class="chroma-nx">heads</span><span class="chroma-p">[</span><span class="chroma-nx">typeId</span><span class="chroma-p">]</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
+</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-nx">dimension</span><span class="chroma-p">.</span><span class="chroma-nx">spawnItem</span><span class="chroma-p">(</span><span class="chroma-k">new</span> <span class="chroma-nx">ItemStack</span><span class="chroma-p">(</span><span class="chroma-nx">head</span><span class="chroma-p">)</span><span class="chroma-p">,</span> <span class="chroma-nx">location</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-p">}</span><span class="chroma-p">,</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-p">{</span> <span class="chroma-nx">entityTypes</span>: <span class="chroma-kt">Object.keys</span><span class="chroma-p">(</span><span class="chroma-nx">heads</span><span class="chroma-p">)</span> <span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">)</span><span class="chroma-p">;</span>
 </span></span></code></pre></div>
                 
             </div>

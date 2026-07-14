@@ -65,71 +65,87 @@
             <div
                 class="h-full overflow-y-auto overflow-x-auto grow min-h-64 p-2 pt-8 w-full">
                 
-                <div data-content-text="import { system } from &#39;@minecraft/server&#39;;
+                <div data-content-text="import { system } from &#34;@minecraft/server&#34;;
 
 /** @param {number} yRotation */
 function getIntercardinalDirection(yRotation) {
     // Converts the Y rotation into a positive angle below 360
     yRotation %= 360;
-    if (yRotation &lt; 0)
-        yRotation += 360;
+    if (yRotation &lt; 0) yRotation += 360;
+
     // Returns the Y rotation as an intercardinal direction below 16
     return Math.round(yRotation / 22.5) % 16;
 }
+
 // Make sure you change &#34;wiki&#34; to your own namespace!
 const stateName = &#34;wiki:intercardinal_direction&#34;;
 const componentName = &#34;wiki:intercardinal_orientation&#34;;
+
 /** @type {import(&#34;@minecraft/server&#34;).BlockCustomComponent} */
 const BlockIntercardinalOrientationComponent = {
     beforeOnPlayerPlace(event, { params }) {
         const { player } = event;
-        if (!player)
-            return;
+        if (!player) return;
+
         // Get the &#34;y_rotation_offset&#34; value defined in the block JSON (default to 0) and add it to the player&#39;s Y rotation
         const yRotationOffset = params.y_rotation_offset ?? 0;
         const yRotation = player.getRotation().y + yRotationOffset;
+
         // Get the intercardinal direction value (0-15) from the player&#39;s Y rotation
         const direction = getIntercardinalDirection(yRotation);
+
         // Update the block permutation being placed
         event.permutationToPlace = event.permutationToPlace.withState(stateName, direction);
     },
 };
+
 // Register the custom component with the name &#34;wiki:intercardinal_orientation&#34;.
 system.beforeEvents.startup.subscribe(({ blockComponentRegistry }) =&gt; {
-    blockComponentRegistry.registerCustomComponent(componentName, BlockIntercardinalOrientationComponent);
+    blockComponentRegistry.registerCustomComponent(
+        componentName,
+        BlockIntercardinalOrientationComponent
+    );
 });
-" data-content-type="text" id="snippet-content"><pre class="chroma-chroma"><code><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kr">import</span> <span class="chroma-p">{</span> <span class="chroma-nx">system</span> <span class="chroma-p">}</span> <span class="chroma-kr">from</span> <span class="chroma-s1">&#39;@minecraft/server&#39;</span><span class="chroma-p">;</span>
+" data-content-type="text" id="snippet-content"><pre class="chroma-chroma"><code><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kr">import</span> <span class="chroma-p">{</span> <span class="chroma-nx">system</span> <span class="chroma-p">}</span> <span class="chroma-kr">from</span> <span class="chroma-s2">&#34;@minecraft/server&#34;</span><span class="chroma-p">;</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm">/** @param {number} yRotation */</span>
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kd">function</span> <span class="chroma-nx">getIntercardinalDirection</span><span class="chroma-p">(</span><span class="chroma-nx">yRotation</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-c1">// Converts the Y rotation into a positive angle below 360
 </span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>    <span class="chroma-nx">yRotation</span> <span class="chroma-o">%=</span> <span class="chroma-mi">360</span><span class="chroma-p">;</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">yRotation</span> <span class="chroma-o">&lt;</span> <span class="chroma-mi">0</span><span class="chroma-p">)</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-nx">yRotation</span> <span class="chroma-o">+=</span> <span class="chroma-mi">360</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-nx">yRotation</span> <span class="chroma-o">&lt;</span> <span class="chroma-mi">0</span><span class="chroma-p">)</span> <span class="chroma-nx">yRotation</span> <span class="chroma-o">+=</span> <span class="chroma-mi">360</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
 </span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-c1">// Returns the Y rotation as an intercardinal direction below 16
 </span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>    <span class="chroma-k">return</span> <span class="chroma-nb">Math</span><span class="chroma-p">.</span><span class="chroma-nx">round</span><span class="chroma-p">(</span><span class="chroma-nx">yRotation</span> <span class="chroma-o">/</span> <span class="chroma-mf">22.5</span><span class="chroma-p">)</span> <span class="chroma-o">%</span> <span class="chroma-mi">16</span><span class="chroma-p">;</span>
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1">// Make sure you change &#34;wiki&#34; to your own namespace!
 </span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span><span class="chroma-kr">const</span> <span class="chroma-nx">stateName</span> <span class="chroma-o">=</span> <span class="chroma-s2">&#34;wiki:intercardinal_direction&#34;</span><span class="chroma-p">;</span>
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kr">const</span> <span class="chroma-nx">componentName</span> <span class="chroma-o">=</span> <span class="chroma-s2">&#34;wiki:intercardinal_orientation&#34;</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-cm">/** @type {import(&#34;@minecraft/server&#34;).BlockCustomComponent} */</span>
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-kr">const</span> <span class="chroma-nx">BlockIntercardinalOrientationComponent</span> <span class="chroma-o">=</span> <span class="chroma-p">{</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-nx">beforeOnPlayerPlace</span><span class="chroma-p">(</span><span class="chroma-nx">event</span><span class="chroma-p">,</span> <span class="chroma-p">{</span> <span class="chroma-nx">params</span> <span class="chroma-p">}</span><span class="chroma-p">)</span> <span class="chroma-p">{</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-p">{</span> <span class="chroma-nx">player</span> <span class="chroma-p">}</span> <span class="chroma-o">=</span> <span class="chroma-nx">event</span><span class="chroma-p">;</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-o">!</span><span class="chroma-nx">player</span><span class="chroma-p">)</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-k">return</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-k">if</span> <span class="chroma-p">(</span><span class="chroma-o">!</span><span class="chroma-nx">player</span><span class="chroma-p">)</span> <span class="chroma-k">return</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
 </span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Get the &#34;y_rotation_offset&#34; value defined in the block JSON (default to 0) and add it to the player&#39;s Y rotation
 </span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-kr">const</span> <span class="chroma-nx">yRotationOffset</span> <span class="chroma-o">=</span> <span class="chroma-nx">params</span><span class="chroma-p">.</span><span class="chroma-nx">y_rotation_offset</span> <span class="chroma-o">?</span><span class="chroma-o">?</span> <span class="chroma-mi">0</span><span class="chroma-p">;</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-kr">const</span> <span class="chroma-nx">yRotation</span> <span class="chroma-o">=</span> <span class="chroma-nx">player</span><span class="chroma-p">.</span><span class="chroma-nx">getRotation</span><span class="chroma-p">(</span><span class="chroma-p">)</span><span class="chroma-p">.</span><span class="chroma-nx">y</span> <span class="chroma-o">+</span> <span class="chroma-nx">yRotationOffset</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
 </span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Get the intercardinal direction value (0-15) from the player&#39;s Y rotation
 </span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-kr">const</span> <span class="chroma-nx">direction</span> <span class="chroma-o">=</span> <span class="chroma-nx">getIntercardinalDirection</span><span class="chroma-p">(</span><span class="chroma-nx">yRotation</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
 </span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-c1">// Update the block permutation being placed
 </span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>        <span class="chroma-nx">event</span><span class="chroma-p">.</span><span class="chroma-nx">permutationToPlace</span> <span class="chroma-o">=</span> <span class="chroma-nx">event</span><span class="chroma-p">.</span><span class="chroma-nx">permutationToPlace</span><span class="chroma-p">.</span><span class="chroma-nx">withState</span><span class="chroma-p">(</span><span class="chroma-nx">stateName</span><span class="chroma-p">,</span> <span class="chroma-nx">direction</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-p">}</span><span class="chroma-p">,</span>
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1">// Register the custom component with the name &#34;wiki:intercardinal_orientation&#34;.
 </span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span><span class="chroma-nx">system</span><span class="chroma-p">.</span><span class="chroma-nx">beforeEvents</span><span class="chroma-p">.</span><span class="chroma-nx">startup</span><span class="chroma-p">.</span><span class="chroma-nx">subscribe</span><span class="chroma-p">(</span><span class="chroma-p">(</span><span class="chroma-p">{</span> <span class="chroma-nx">blockComponentRegistry</span> <span class="chroma-p">}</span><span class="chroma-p">)</span> <span class="chroma-o">=</span><span class="chroma-o">&gt;</span> <span class="chroma-p">{</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-nx">blockComponentRegistry</span><span class="chroma-p">.</span><span class="chroma-nx">registerCustomComponent</span><span class="chroma-p">(</span><span class="chroma-nx">componentName</span><span class="chroma-p">,</span> <span class="chroma-nx">BlockIntercardinalOrientationComponent</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-nx">blockComponentRegistry</span><span class="chroma-p">.</span><span class="chroma-nx">registerCustomComponent</span><span class="chroma-p">(</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-nx">componentName</span><span class="chroma-p">,</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-nx">BlockIntercardinalOrientationComponent</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-p">)</span><span class="chroma-p">;</span>
 </span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">}</span><span class="chroma-p">)</span><span class="chroma-p">;</span>
 </span></span></code></pre></div>
                 

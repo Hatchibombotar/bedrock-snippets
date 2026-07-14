@@ -66,7 +66,7 @@
                 class="h-full overflow-y-auto overflow-x-auto grow min-h-64 p-2 pt-8 w-full">
                 
                 <div data-content-text="{
-    &#34;format_version&#34;: &#34;1.26.10&#34;,
+    &#34;format_version&#34;: &#34;1.26.30&#34;,
     &#34;minecraft:block&#34;: {
         &#34;description&#34;: {
             &#34;identifier&#34;: &#34;wiki:custom_head&#34;,
@@ -97,7 +97,7 @@
             },
             // Prevents the block from being placed on the bottom face of another block
             &#34;minecraft:placement_filter&#34;: {
-                &#34;conditions&#34;: [{ &#34;allowed_faces&#34;: [&#34;up&#34;, &#34;side&#34;] }]
+                &#34;conditions&#34;: [{ &#34;allowed_faces&#34;: [&#34;up&#34;, &#34;south&#34;, &#34;north&#34;, &#34;west&#34;, &#34;east&#34;] }]
             },
             // Prevents snow from accumulating above the block
             &#34;minecraft:precipitation_interactions&#34;: {
@@ -140,27 +140,27 @@
             &#34;minecraft:material_instances&#34;: {
                 &#34;down&#34;: {
                     &#34;texture&#34;: &#34;wiki:custom_head_bottom&#34;,
-                    &#34;ambient_occlusion&#34;: false
+                    &#34;ambient_occlusion&#34;: 0
                 },
                 &#34;up&#34;: {
                     &#34;texture&#34;: &#34;wiki:custom_head_top&#34;,
-                    &#34;ambient_occlusion&#34;: false
+                    &#34;ambient_occlusion&#34;: 0
                 },
                 &#34;north&#34;: {
                     &#34;texture&#34;: &#34;wiki:custom_head_front&#34;,
-                    &#34;ambient_occlusion&#34;: false
+                    &#34;ambient_occlusion&#34;: 0
                 },
                 &#34;south&#34;: {
                     &#34;texture&#34;: &#34;wiki:custom_head_back&#34;,
-                    &#34;ambient_occlusion&#34;: false
+                    &#34;ambient_occlusion&#34;: 0
                 },
                 &#34;west&#34;: {
                     &#34;texture&#34;: &#34;wiki:custom_head_left&#34;,
-                    &#34;ambient_occlusion&#34;: false
+                    &#34;ambient_occlusion&#34;: 0
                 },
                 &#34;east&#34;: {
                     &#34;texture&#34;: &#34;wiki:custom_head_right&#34;,
-                    &#34;ambient_occlusion&#34;: false
+                    &#34;ambient_occlusion&#34;: 0
                 }
             }
         },
@@ -240,7 +240,7 @@
     }
 }
 " data-content-type="text" id="snippet-content"><pre class="chroma-chroma"><code><span class="chroma-line"><span class="chroma-cl"><span class="chroma-p">{</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-nt">&#34;format_version&#34;</span><span class="chroma-p">:</span> <span class="chroma-s2">&#34;1.26.10&#34;</span><span class="chroma-p">,</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-nt">&#34;format_version&#34;</span><span class="chroma-p">:</span> <span class="chroma-s2">&#34;1.26.30&#34;</span><span class="chroma-p">,</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">    <span class="chroma-nt">&#34;minecraft:block&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">{</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-nt">&#34;description&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">{</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-nt">&#34;identifier&#34;</span><span class="chroma-p">:</span> <span class="chroma-s2">&#34;wiki:custom_head&#34;</span><span class="chroma-p">,</span>
@@ -271,7 +271,7 @@
 </span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-p">}</span><span class="chroma-p">,</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-c1">// Prevents the block from being placed on the bottom face of another block
 </span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>            <span class="chroma-nt">&#34;minecraft:placement_filter&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">{</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-nt">&#34;conditions&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">[</span><span class="chroma-p">{</span> <span class="chroma-nt">&#34;allowed_faces&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">[</span><span class="chroma-s2">&#34;up&#34;</span><span class="chroma-p">,</span> <span class="chroma-s2">&#34;side&#34;</span><span class="chroma-p">]</span> <span class="chroma-p">}</span><span class="chroma-p">]</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-nt">&#34;conditions&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">[</span><span class="chroma-p">{</span> <span class="chroma-nt">&#34;allowed_faces&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">[</span><span class="chroma-s2">&#34;up&#34;</span><span class="chroma-p">,</span> <span class="chroma-s2">&#34;south&#34;</span><span class="chroma-p">,</span> <span class="chroma-s2">&#34;north&#34;</span><span class="chroma-p">,</span> <span class="chroma-s2">&#34;west&#34;</span><span class="chroma-p">,</span> <span class="chroma-s2">&#34;east&#34;</span><span class="chroma-p">]</span> <span class="chroma-p">}</span><span class="chroma-p">]</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-p">}</span><span class="chroma-p">,</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-c1">// Prevents snow from accumulating above the block
 </span></span></span><span class="chroma-line"><span class="chroma-cl"><span class="chroma-c1"></span>            <span class="chroma-nt">&#34;minecraft:precipitation_interactions&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">{</span>
@@ -314,27 +314,27 @@
 </span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-nt">&#34;minecraft:material_instances&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">{</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-nt">&#34;down&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">{</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;texture&#34;</span><span class="chroma-p">:</span> <span class="chroma-s2">&#34;wiki:custom_head_bottom&#34;</span><span class="chroma-p">,</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;ambient_occlusion&#34;</span><span class="chroma-p">:</span> <span class="chroma-kc">false</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;ambient_occlusion&#34;</span><span class="chroma-p">:</span> <span class="chroma-mi">0</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-p">}</span><span class="chroma-p">,</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-nt">&#34;up&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">{</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;texture&#34;</span><span class="chroma-p">:</span> <span class="chroma-s2">&#34;wiki:custom_head_top&#34;</span><span class="chroma-p">,</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;ambient_occlusion&#34;</span><span class="chroma-p">:</span> <span class="chroma-kc">false</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;ambient_occlusion&#34;</span><span class="chroma-p">:</span> <span class="chroma-mi">0</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-p">}</span><span class="chroma-p">,</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-nt">&#34;north&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">{</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;texture&#34;</span><span class="chroma-p">:</span> <span class="chroma-s2">&#34;wiki:custom_head_front&#34;</span><span class="chroma-p">,</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;ambient_occlusion&#34;</span><span class="chroma-p">:</span> <span class="chroma-kc">false</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;ambient_occlusion&#34;</span><span class="chroma-p">:</span> <span class="chroma-mi">0</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-p">}</span><span class="chroma-p">,</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-nt">&#34;south&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">{</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;texture&#34;</span><span class="chroma-p">:</span> <span class="chroma-s2">&#34;wiki:custom_head_back&#34;</span><span class="chroma-p">,</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;ambient_occlusion&#34;</span><span class="chroma-p">:</span> <span class="chroma-kc">false</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;ambient_occlusion&#34;</span><span class="chroma-p">:</span> <span class="chroma-mi">0</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-p">}</span><span class="chroma-p">,</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-nt">&#34;west&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">{</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;texture&#34;</span><span class="chroma-p">:</span> <span class="chroma-s2">&#34;wiki:custom_head_left&#34;</span><span class="chroma-p">,</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;ambient_occlusion&#34;</span><span class="chroma-p">:</span> <span class="chroma-kc">false</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;ambient_occlusion&#34;</span><span class="chroma-p">:</span> <span class="chroma-mi">0</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-p">}</span><span class="chroma-p">,</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-nt">&#34;east&#34;</span><span class="chroma-p">:</span> <span class="chroma-p">{</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;texture&#34;</span><span class="chroma-p">:</span> <span class="chroma-s2">&#34;wiki:custom_head_right&#34;</span><span class="chroma-p">,</span>
-</span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;ambient_occlusion&#34;</span><span class="chroma-p">:</span> <span class="chroma-kc">false</span>
+</span></span><span class="chroma-line"><span class="chroma-cl">                    <span class="chroma-nt">&#34;ambient_occlusion&#34;</span><span class="chroma-p">:</span> <span class="chroma-mi">0</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">                <span class="chroma-p">}</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">            <span class="chroma-p">}</span>
 </span></span><span class="chroma-line"><span class="chroma-cl">        <span class="chroma-p">}</span><span class="chroma-p">,</span>
